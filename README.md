@@ -22,8 +22,8 @@ A comprehensive Cypress-based testing framework for wallet transaction processin
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd wallet-api-cypress-automation
+git clone https://github.com/khawjaahmad/cypress-wallet-api
+cd cypress-wallet-api
 ```
 
 2. Install dependencies:
