@@ -1,0 +1,41 @@
+{
+  "name": "wallet-api-cypress-automation",
+  "version": "1.0.0",
+  "description": "Cypress automation framework for Wallet API",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:cloud": "cypress run --record --key $CYPRESS_RECORD_KEY",
+    "cy:run:parallel": "cypress run --record --parallel --ci-build-id $CI_BUILD_ID",
+    "test": "cypress run --spec 'cypress/e2e/**/*.cy.js'",
+    "test:cloud": "cypress run --spec 'cypress/e2e/**/*.cy.js' --record",
+    "test:chrome": "cypress run --browser chrome --spec 'cypress/e2e/**/*.cy.js'",
+    "test:chrome:cloud": "cypress run --browser chrome --spec 'cypress/e2e/**/*.cy.js' --record",
+    "test:smoke": "cypress run --spec 'cypress/e2e/**/01-transaction-processing.cy.js'",
+    "test:smoke:cloud": "cypress run --spec 'cypress/e2e/**/01-transaction-processing.cy.js' --record",
+    "test:performance": "cypress run --spec 'cypress/e2e/**/03-performance-stress.cy.js'",
+    "test:performance:cloud": "cypress run --spec 'cypress/e2e/**/03-performance-stress.cy.js' --record",
+    "test:negative": "cypress run --spec 'cypress/e2e/**/02-negative-scenarios.cy.js'",
+    "clean": "rm -rf cypress/reports cypress/screenshots cypress/videos",
+    "clean:reports": "rm -rf cypress/reports",
+    "verify": "cypress verify"
+  },
+  "keywords": [
+    "cypress",
+    "api-testing",
+    "automation"
+  ],
+  "author": "Demo",
+  "license": "MIT",
+  "devDependencies": {
+    "@faker-js/faker": "^8.3.1",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "cypress": "^14.4.0",
+    "cypress-mochawesome-reporter": "^3.7.0",
+    "lodash": "^4.17.21"
+  },
+  "dependencies": {
+    "decimal.js": "^10.5.0"
+  }
+}
