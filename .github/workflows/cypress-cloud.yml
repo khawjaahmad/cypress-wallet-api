@@ -1,70 +1,27 @@
-name: Cypress Cloud Tests
+name: Cypress Tests
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
-  schedule:
-    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       spec:
         description: 'Spec pattern to run (optional)'
         required: false
         default: ''
-      browser:
-        description: 'Browser to use'
-        required: false
-        default: 'chrome'
-        type: choice
-        options:
-          - chrome
-          - firefox
-          - edge
 
 env:
   CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
 jobs:
-  smoke-tests:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-22.04
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run smoke tests
-        uses: cypress-io/github-action@v6
-        with:
-          install: false
-          browser: chrome
-          spec: 'cypress/e2e/**/01-transaction-processing.cy.js'
-          record: true
-          group: 'Smoke Tests'
-          tag: 'smoke,pr'
-          ci-build-id: smoke-${{ github.run_id }}
-          wait-on: 'https://api.ahmadwaqar.dev/health'
-          wait-on-timeout: 60
-
-  full-tests:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+  cypress-tests:
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         containers: [1, 2, 3]
-        browser: [chrome]
     
     steps:
       - name: Checkout code
@@ -78,83 +35,17 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Create reports directory
-        run: mkdir -p cypress/reports
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           install: false
-          browser: ${{ matrix.browser }}
+          browser: chrome
           spec: ${{ github.event.inputs.spec || 'cypress/e2e/**/*.cy.js' }}
           record: true
           parallel: true
-          group: 'Full Test Suite'
-          tag: ${{ matrix.browser }},full
+          group: 'API Tests'
+          tag: 'full-suite'
           ci-build-id: ${{ github.run_id }}-${{ github.run_attempt }}
           wait-on: 'https://api.ahmadwaqar.dev/health'
-          wait-on-timeout: 120
-
-      - name: Upload artifacts
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-artifacts-${{ matrix.containers }}
-          path: |
-            cypress/screenshots
-            cypress/videos
-            cypress/reports
-          retention-days: 7
-
-  performance-tests:
-    if: github.event_name == 'schedule'
-    runs-on: ubuntu-22.04
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run performance tests
-        uses: cypress-io/github-action@v6
-        with:
-          install: false
-          browser: chrome
-          spec: 'cypress/e2e/**/03-performance-stress.cy.js,cypress/e2e/**/04-advanced-scenarios.cy.js'
-          record: true
-          group: 'Performance Tests'
-          tag: 'performance,scheduled'
-          ci-build-id: perf-${{ github.run_id }}
-          wait-on: 'https://api.ahmadwaqar.dev/health'
-
-      - name: Upload performance metrics
-        uses: actions/upload-artifact@v4
-        with:
-          name: performance-metrics
-          path: cypress/reports/performance-metrics.json
-          retention-days: 30
-
-  test-summary:
-    needs: [smoke-tests, full-tests, performance-tests]
-    runs-on: ubuntu-22.04
-    if: always()
-    
-    steps:
-      - name: Display test summary
-        run: |
-          echo "## Test Execution Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Workflow**: ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### View detailed results in [Cypress Cloud Dashboard](https://cloud.cypress.io/)" >> $GITHUB_STEP_SUMMARY
+          wait-on-timeout: 180
